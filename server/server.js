@@ -7,9 +7,8 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// CORS 설정 및 소켓 경로('/ws') 강제 설정을 위한 Socket.IO 서버 생성
+// CORS 설정만 남기고 소켓 경로('path')는 제거하여 Render의 기본 설정을 따름
 const io = new Server(server, {
-  path: '/ws', // ⭐ 소켓 경로를 /ws로 명시
   cors: {
     origin: "*", 
     methods: ["GET", "POST"]
