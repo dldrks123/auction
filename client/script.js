@@ -2,7 +2,6 @@
 // 🚨 [YOUR_RAILWAY_URL] 부분을 생성된 실제 주소로 교체하세요!
 const RAILWAY_URL = 'https://auction-production-360a.up.railway.app'; 
 const socket = io(RAILWAY_URL, {
-    path: '/ws' // ⭐ 서버와 동일한 경로를 명시
 }); 
 
 
