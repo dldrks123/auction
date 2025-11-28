@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>실시간 포인트 경매장 (P)</title>
+    <style>
+        .ready { color: green; font-weight: bold; }
+        .not-ready { color: red; }
+    </style>
+</head>
+<body>
+    <h1>실시간 포인트 경매장</h1>
+    
+    <div id="nicknameSection">
+        <h2>👋 환영합니다!</h2>
+        <input type="text" id="nicknameInput" placeholder="닉네임을 입력하세요">
+        <button onclick="setNickname()">입장하기</button>
+        <p id="nicknameError" style="color: red;"></p>
+    </div>
+
+    <hr>
+    
+    <div id="auctionSection" style="display: none;">
+        <p>나의 닉네임: <strong id="myNickname"></strong></p>
+        
+        <h3>현재 접속자 (<span id="userCount">0</span>명)</h3>
+        <ul id="userList">
+            </ul>
+        
+        <hr>
+
+        <h2>경매 상태: <span id="auctionStatusDisplay">준비 중</span></h2>
+        <button id="readyButton" onclick="toggleReady()">준비 완료 / 취소</button>
+        
+        <hr>
+
+        <p>남은 시간: <strong id="timer">0초</strong></p>
+        <p>현재 최고 입찰가: <strong id="currentPrice">0P</strong></p>
+        <p>최고 입찰자: <span id="highestBidder">없음</span></p>
+        
+        <hr>
+
+        <h2>입찰하기</h2>
+        <input type="number" id="bidInput" placeholder="입찰 금액을 입력하세요">
+        <button onclick="submitBid()">입찰</button>
+        <button id="plusTenButton" onclick="bidPlusTen()">+10P 입찰</button>
+
+        <p id="messageArea" style="color: red;"></p>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
