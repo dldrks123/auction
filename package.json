@@ -1,0 +1,13 @@
+{
+  "name": "auction-server",
+  "version": "1.0.0",
+  "description": "Real-time auction server using Socket.io",
+  "main": "server/server.js", // <-- 🚨 'server/' 경로를 추가하여 server.js를 명시
+  "scripts": {
+    "start": "node server/server.js"  // <-- 🚨 'server/' 경로를 추가하여 실행 파일 위치 명시
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}
