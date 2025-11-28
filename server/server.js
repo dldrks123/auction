@@ -7,8 +7,9 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// CORS 설정을 위한 Socket.IO 서버 생성
+// CORS 설정 및 소켓 경로('/ws') 강제 설정을 위한 Socket.IO 서버 생성
 const io = new Server(server, {
+  path: '/ws', // ⭐ 소켓 경로를 /ws로 명시
   cors: {
     origin: "*", 
     methods: ["GET", "POST"]
@@ -21,19 +22,19 @@ app.use(express.static(path.join(__dirname, '..', 'client')));
 // ----------------------------------------------------
 // 경매 상태 및 변수 초기화
 // ----------------------------------------------------
-const MIN_START_PRICE = 50;  // 최소 시작가 (50P)
-const BID_INCREMENT = 10;    // 최소 입찰 증가 단위 (10P)
-const AUCTION_DURATION_SEC = 10; // 경매 시간 (10초)
-const SNIPING_THRESHOLD = 5; // 스나이핑 방지 기준 시간 (5초 이하)
-const TIME_EXTENSION = 5;    // 시간 연장되는 시간 (5초)
+const MIN_START_PRICE = 50;
+const BID_INCREMENT = 10;
+const AUCTION_DURATION_SEC = 10;
+const SNIPING_THRESHOLD = 5;
+const TIME_EXTENSION = 5;
 
-let auctionStatus = 'WAITING_FOR_READY'; // 경매 상태: WAITING_FOR_READY, ACTIVE, ENDED
+let auctionStatus = 'WAITING_FOR_READY';
 let currentPrice = MIN_START_PRICE;
 let highestBidder = '없음'; 
 let timerRemaining = AUCTION_DURATION_SEC;
 let auctionInterval;
-const users = {}; // { socketId: nickname, ... }
-const readyStatus = {}; // { socketId: boolean, ... } 준비 상태 관리
+const users = {};
+const readyStatus = {};
 
 // ----------------------------------------------------
 // 사용자 목록 전송 함수
@@ -42,8 +43,6 @@ function sendUserList() {
     const userList = Object.values(users);
     io.emit('updateUserList', userList); 
     console.log('현재 접속 사용자 수:', userList.length);
-    
-    // 준비 상태도 함께 전송
     io.emit('updateReadyStatus', readyStatus);
 }
 
@@ -64,7 +63,7 @@ function sendAuctionState(socket = io) {
 // ----------------------------------------------------
 function startAuctionTimer() {
     auctionStatus = 'ACTIVE';
-    sendAuctionState(); // 상태 변경 즉시 전송
+    sendAuctionState();
 
     if (auctionInterval) {
         clearInterval(auctionInterval);
@@ -92,7 +91,6 @@ function startAuctionTimer() {
 io.on('connection', (socket) => {
   console.log('새로운 사용자 접속:', socket.id);
   
-  // 접속 시 사용자 목록만 보냄 (경매 상태는 닉네임 설정 후 보냄)
   sendUserList(); 
 
   // 1. 닉네임 설정 이벤트 처리
@@ -103,7 +101,6 @@ io.on('connection', (socket) => {
     
     sendUserList(); 
     
-    // 닉네임 설정 성공 후, 화면 전환 및 초기 상태 설정을 위한 이벤트 전송
     socket.emit('nicknameSetSuccess', { 
         nickname: nickname,
         auctionState: {
@@ -123,7 +120,6 @@ io.on('connection', (socket) => {
     
     sendUserList();
     
-    // 모든 유저가 준비되었는지 확인
     const readyCount = Object.keys(users).filter(id => readyStatus[id]).length;
     const totalUsers = Object.keys(users).length;
     
@@ -152,11 +148,10 @@ io.on('connection', (socket) => {
       
       // 스나이핑 방지 (시간 연장) 로직
       if (timerRemaining <= SNIPING_THRESHOLD) {
-          timerRemaining = TIME_EXTENSION; // 5초로 연장
+          timerRemaining = TIME_EXTENSION;
           console.log(`[시간 연장] 경매 시간 ${TIME_EXTENSION}초로 연장됨.`);
       }
       
-      // 모든 클라이언트에게 경매 상태 업데이트 전송
       sendAuctionState();
 
       console.log(`새로운 입찰: ${bidAmount}P (입찰자: ${highestBidder})`);
@@ -173,7 +168,6 @@ io.on('connection', (socket) => {
     
     sendUserList();
     
-    // 모든 유저가 접속 해제되면 경매 초기화
     if (Object.keys(users).length === 0 && auctionStatus === 'ACTIVE') {
         clearInterval(auctionInterval);
         auctionStatus = 'WAITING_FOR_READY';
@@ -187,7 +181,6 @@ io.on('connection', (socket) => {
 });
 
 // 서버 리스닝
-// Railway 배포 시 PORT 환경 변수를 사용합니다.
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);

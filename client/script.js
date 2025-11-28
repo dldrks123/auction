@@ -1,7 +1,10 @@
 // 서버 연결
-// 🚨 Railway 등 외부 서버 배포 시: const socket = io('https://[YOUR_RAILWAY_URL].up.railway.app');
-// 💻 로컬 테스트 시: const socket = io('http://localhost:3000');
-const socket = io('http://localhost:3000'); 
+// 🚨 [YOUR_RAILWAY_URL] 부분을 생성된 실제 주소로 교체하세요!
+const RAILWAY_URL = 'https://auction-production-360a.up.railway.app'; 
+const socket = io(RAILWAY_URL, {
+    path: '/ws' // ⭐ 서버와 동일한 경로를 명시
+}); 
+
 
 // HTML 요소 선택
 const nicknameSectionEl = document.getElementById('nicknameSection');
@@ -24,8 +27,8 @@ const readyButtonEl = document.getElementById('readyButton');
 const plusTenButtonEl = document.getElementById('plusTenButton');
 
 let userNickname = ''; 
-let currentHighestPrice = 0; // 현재 최고 입찰가를 저장 (계산용)
-let myReadyStatus = false; // 나의 준비 상태
+let currentHighestPrice = 0;
+let myReadyStatus = false;
 
 // ----------------------------------------------------
 // 사용자 닉네임 설정 함수
@@ -58,7 +61,6 @@ function bidPlusTen() {
         return;
     }
     
-    // 현재 최고가 + 10P를 계산하여 입찰 
     const bidAmount = currentHighestPrice + 10;
     submitBid(bidAmount);
 }
@@ -79,9 +81,8 @@ function submitBid(amount = null) {
         return;
     }
     
-    // 서버로 입찰 금액 전송
     socket.emit('bid', bidAmount);
-    if (amount === null) bidInputEl.value = ''; // 직접 입력 시에만 초기화
+    if (amount === null) bidInputEl.value = '';
 }
 
 // ----------------------------------------------------
@@ -90,12 +91,10 @@ function submitBid(amount = null) {
 
 // 1. 닉네임 설정 성공 시 화면 전환 및 초기 상태 설정
 socket.on('nicknameSetSuccess', (data) => {
-    // 닉네임이 성공적으로 서버에 등록된 경우에만 화면 전환
     nicknameSectionEl.style.display = 'none';
     auctionSectionEl.style.display = 'block';
     nicknameErrorEl.textContent = ''; 
     
-    // 초기 경매 상태 업데이트
     const auctionData = data.auctionState;
     currentHighestPrice = auctionData.price;
     currentPriceEl.textContent = `${auctionData.price.toLocaleString()}P`;
@@ -137,7 +136,6 @@ socket.on('updateAuctionState', (data) => {
     }
     auctionStatusDisplayEl.textContent = statusText;
 
-    // 경매 상태에 따라 입찰 버튼 활성화/비활성화
     bidInputEl.disabled = !isActive;
     document.querySelector('button[onclick="submitBid()"]').disabled = !isActive;
     plusTenButtonEl.disabled = !isActive;
@@ -184,7 +182,6 @@ socket.on('updateUserList', (userList) => {
             displayNickname += myReadyStatus ? ' (나/준비)' : ' (나/미준비)';
             listItem.classList.add(myReadyStatus ? 'ready' : 'not-ready');
         } else {
-            // 다른 사람의 준비 상태는 현재 서버 구조상 정확히 매칭하기 어렵습니다. 
             displayNickname += ' (?)'; 
         }
 
